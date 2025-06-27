@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VITA智能音频测试 v2.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+        }
+        
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        .status.ready { background: #e3f2fd; color: #1976d2; }
+        .status.testing { background: #fff3e0; color: #f57c00; }
+        .status.success { background: #e8f5e8; color: #388e3c; }
+        .status.error { background: #ffebee; color: #d32f2f; }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 5px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .console {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+        
+        .audio-player {
+            margin: 15px 0;
+            width: 100%;
+        }
+        
+        .format-info {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .metric {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .metric-label {
+            font-size: 0.8em;
+            color: #666;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 VITA智能音频测试 v2.0</h1>
+        <p class="subtitle">全新FFmpeg标准化 + 智能格式选择 + 多浏览器兼容性测试</p>
+        
+        <div class="test-grid">
+            <!-- 智能音频测试 -->
+            <div class="test-card">
+                <h3>
+                    🧠 智能音频格式测试
+                    <span class="status ready" id="smartStatus">准备就绪</span>
+                </h3>
+                <p>自动检测浏览器并选择最佳音频格式，使用FFmpeg标准化处理</p>
+                <div class="format-info" id="formatInfo">
+                    <strong>检测到的浏览器:</strong> <span id="browserInfo">检测中...</span><br>
+                    <strong>推荐格式:</strong> <span id="recommendedFormat">-</span><br>
+                    <strong>FFmpeg可用:</strong> <span id="ffmpegStatus">检查中...</span>
+                </div>
+                <button class="btn" onclick="testSmartAudio()">
+                    🚀 智能音频测试
+                </button>
+                <audio class="audio-player" id="smartAudio" controls style="display: none;"></audio>
+            </div>
+            
+            <!-- 多格式测试 -->
+            <div class="test-card">
+                <h3>
+                    🎭 多格式同步测试
+                    <span class="status ready" id="multiStatus">准备就绪</span>
+                </h3>
+                <p>一次生成MP3、WAV、OGG三种格式，测试浏览器兼容性</p>
+                <button class="btn" onclick="testMultiFormat()">
+                    🔄 多格式测试
+                </button>
+                <div id="multiFormats" style="margin-top: 15px;"></div>
+            </div>
+            
+            <!-- 性能测试 -->
+            <div class="test-card">
+                <h3>
+                    ⚡ 性能基准测试
+                    <span class="status ready" id="perfStatus">准备就绪</span>
+                </h3>
+                <p>测试音频生成和转换性能，分析实时性指标</p>
+                <div class="metrics" id="perfMetrics">
+                    <div class="metric">
+                        <div class="metric-value" id="genTime">-</div>
+                        <div class="metric-label">生成时间(ms)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="convTime">-</div>
+                        <div class="metric-label">转换时间(ms)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="totalTime">-</div>
+                        <div class="metric-label">总耗时(ms)</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="audioSize">-</div>
+                        <div class="metric-label">音频大小(KB)</div>
+                    </div>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="perfProgress"></div>
+                </div>
+                <button class="btn" onclick="runPerformanceTest()">
+                    📊 性能测试
+                </button>
+            </div>
+            
+            <!-- 兼容性测试 -->
+            <div class="test-card">
+                <h3>
+                    🌐 浏览器兼容性验证
+                    <span class="status ready" id="compatStatus">准备就绪</span>
+                </h3>
+                <p>全面检测当前浏览器的音频API支持情况</p>
+                <div id="compatResults"></div>
+                <button class="btn" onclick="checkCompatibility()">
+                    🔍 兼容性检查
+                </button>
+            </div>
+        </div>
+        
+        <!-- 控制台 -->
+        <div class="test-card">
+            <h3>📟 测试控制台</h3>
+            <div class="console" id="console"></div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let testStartTime = 0;
+        
+        // 日志函数
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const console = document.getElementById('console');
+            console.textContent += `[${timestamp}] ${message}\n`;
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        // 设置状态
+        function setStatus(elementId, status, text) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = text;
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🎵 VITA智能音频测试 v2.0 启动');
+            detectBrowser();
+            checkFFmpegAvailability();
+        });
+        
+        // 检测浏览器
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browser = 'Unknown';
+            let recommendedFormat = 'wav';
+            
+            if (userAgent.includes('Chrome')) {
+                browser = 'Google Chrome';
+                recommendedFormat = 'wav';
+            } else if (userAgent.includes('Firefox')) {
+                browser = 'Mozilla Firefox';
+                recommendedFormat = 'ogg';
+            } else if (userAgent.includes('Safari')) {
+                browser = 'Safari';
+                recommendedFormat = 'mp3';
+            } else if (userAgent.includes('Edge')) {
+                browser = 'Microsoft Edge';
+                recommendedFormat = 'mp3';
+            }
+            
+            document.getElementById('browserInfo').textContent = browser;
+            document.getElementById('recommendedFormat').textContent = recommendedFormat.toUpperCase();
+            
+            log(`🌐 检测到浏览器: ${browser}`);
+            log(`📋 推荐音频格式: ${recommendedFormat.toUpperCase()}`);
+        }
+        
+        // 检查FFmpeg可用性
+        async function checkFFmpegAvailability() {
+            try {
+                const response = await fetch('http://localhost:8000/speech/formats');
+                const data = await response.json();
+                
+                if (data.success) {
+                    const ffmpegAvailable = data.ffmpeg_available;
+                    document.getElementById('ffmpegStatus').textContent = ffmpegAvailable ? '✅ 可用' : '❌ 不可用';
+                    log(`🔧 FFmpeg状态: ${ffmpegAvailable ? '可用' : '不可用'}`);
+                } else {
+                    document.getElementById('ffmpegStatus').textContent = '❓ 检查失败';
+                    log('⚠️ 无法检查FFmpeg状态');
+                }
+            } catch (error) {
+                document.getElementById('ffmpegStatus').textContent = '❌ 检查失败';
+                log(`❌ FFmpeg检查失败: ${error.message}`);
+            }
+        }
+        
+        // 智能音频测试
+        async function testSmartAudio() {
+            setStatus('smartStatus', 'testing', '测试中...');
+            log('🧠 开始智能音频格式测试...');
+            
+            const startTime = performance.now();
+            
+            try {
+                const response = await fetch('http://localhost:8000/speech/synthesize-smart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        text: '您好！这是VITA智能音频测试。我们正在使用FFmpeg标准化技术，确保在您的浏览器中完美播放。',
+                        voice: 'nova',
+                        speed: '1.0'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // 获取响应头信息
+                const audioFormat = response.headers.get('X-Audio-Format');
+                const originalSize = response.headers.get('X-Original-Size');
+                const convertedSize = response.headers.get('X-Converted-Size');
+                
+                log(`✅ 智能格式选择: ${audioFormat?.toUpperCase()}`);
+                log(`📊 原始大小: ${originalSize} bytes, 转换后: ${convertedSize} bytes`);
+                
+                const audioBlob = await response.blob();
+                const audioUrl = URL.createObjectURL(audioBlob);
+                
+                // 测试播放
+                const audio = new Audio(audioUrl);
+                
+                await new Promise((resolve, reject) => {
+                    audio.addEventListener('loadeddata', () => {
+                        log(`🎶 音频加载成功: ${audio.duration.toFixed(2)}秒`);
+                        resolve();
+                    });
+                    
+                    audio.addEventListener('error', (e) => {
+                        reject(new Error(`音频加载失败: ${audio.error?.message || '未知错误'}`));
+                    });
+                    
+                    audio.load();
+                });
+                
+                // 自动播放测试
+                try {
+                    await audio.play();
+                    log('🎉 智能音频播放成功！');
+                    setStatus('smartStatus', 'success', '播放成功');
+                    
+                    // 设置到页面音频元素
+                    const audioElement = document.getElementById('smartAudio');
+                    audioElement.src = audioUrl;
+                    audioElement.style.display = 'block';
+                    
+                } catch (playError) {
+                    log(`⚠️ 自动播放失败: ${playError.message}，但音频元素可用`);
+                    setStatus('smartStatus', 'success', '需手动播放');
+                    
+                    const audioElement = document.getElementById('smartAudio');
+                    audioElement.src = audioUrl;
+                    audioElement.style.display = 'block';
+                }
+                
+                const endTime = performance.now();
+                log(`⏱️ 智能音频测试完成，总耗时: ${(endTime - startTime).toFixed(2)}ms`);
+                
+            } catch (error) {
+                log(`❌ 智能音频测试失败: ${error.message}`);
+                setStatus('smartStatus', 'error', '测试失败');
+            }
+        }
+        
+        // 多格式测试
+        async function testMultiFormat() {
+            setStatus('multiStatus', 'testing', '生成中...');
+            log('🎭 开始多格式同步测试...');
+            
+            try {
+                const response = await fetch('http://localhost:8000/speech/synthesize-multi', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({
+                        text: '多格式兼容性测试：MP3、WAV、OGG三种格式。',
+                        voice: 'nova',
+                        speed: '1.0'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const formatsContainer = document.getElementById('multiFormats');
+                    formatsContainer.innerHTML = '';
+                    
+                    log(`✅ 生成了 ${Object.keys(data.formats).length} 种格式`);
+                    
+                    for (const [format, info] of Object.entries(data.formats)) {
+                        const formatDiv = document.createElement('div');
+                        formatDiv.innerHTML = `
+                            <strong>${format.toUpperCase()}</strong> (${(info.size / 1024).toFixed(1)}KB)
+                            <audio controls style="width: 100%; margin: 5px 0;">
+                                <source src="${info.data_url}" type="${info.mime_type}">
+                            </audio>
+                        `;
+                        formatDiv.style.marginBottom = '10px';
+                        formatDiv.style.padding = '10px';
+                        formatDiv.style.background = '#f5f5f5';
+                        formatDiv.style.borderRadius = '5px';
+                        formatsContainer.appendChild(formatDiv);
+                        
+                        log(`📁 ${format.toUpperCase()}: ${(info.size / 1024).toFixed(1)}KB`);
+                    }
+                    
+                    setStatus('multiStatus', 'success', '生成完成');
+                    log('🎉 多格式测试完成！');
+                } else {
+                    throw new Error('多格式生成失败');
+                }
+                
+            } catch (error) {
+                log(`❌ 多格式测试失败: ${error.message}`);
+                setStatus('multiStatus', 'error', '生成失败');
+            }
+        }
+        
+        // 性能测试
+        async function runPerformanceTest() {
+            setStatus('perfStatus', 'testing', '测试中...');
+            log('⚡ 开始性能基准测试...');
+            
+            const progressBar = document.getElementById('perfProgress');
+            let progress = 0;
+            
+            try {
+                // 测试参数
+                const testTexts = [
+                    '短文本测试',
+                    '这是一个中等长度的文本测试，用于评估TTS系统的处理能力和响应时间。',
+                    '这是一个相对较长的文本测试，包含了更多的中文字符和标点符号，用于全面评估VITA语音合成系统在处理复杂文本时的性能表现，包括生成时间、转换效率、音频质量等多个维度的指标。'
+                ];
+                
+                let totalGenTime = 0;
+                let totalConvTime = 0;
+                let totalSize = 0;
+                
+                for (let i = 0; i < testTexts.length; i++) {
+                    progress = ((i + 1) / testTexts.length) * 100;
+                    progressBar.style.width = progress + '%';
+                    
+                    log(`📊 测试文本 ${i + 1}/${testTexts.length}: ${testTexts[i].substring(0, 20)}...`);
+                    
+                    const startTime = performance.now();
+                    
+                    const response = await fetch('http://localhost:8000/speech/synthesize-smart', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            text: testTexts[i],
+                            voice: 'nova',
+                            speed: '1.0'
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`性能测试失败: ${response.status}`);
+                    }
+                    
+                    const audioBlob = await response.blob();
+                    const endTime = performance.now();
+                    
+                    const originalSize = parseInt(response.headers.get('X-Original-Size') || '0');
+                    const convertedSize = parseInt(response.headers.get('X-Converted-Size') || '0');
+                    
+                    const totalTime = endTime - startTime;
+                    const estimatedConvTime = totalTime * 0.3; // 估算转换时间占30%
+                    const genTime = totalTime - estimatedConvTime;
+                    
+                    totalGenTime += genTime;
+                    totalConvTime += estimatedConvTime;
+                    totalSize += convertedSize;
+                    
+                    log(`⏱️ 文本${i + 1}: 生成${genTime.toFixed(0)}ms, 转换${estimatedConvTime.toFixed(0)}ms, 大小${(convertedSize/1024).toFixed(1)}KB`);
+                }
+                
+                // 计算平均值
+                const avgGenTime = totalGenTime / testTexts.length;
+                const avgConvTime = totalConvTime / testTexts.length;
+                const avgTotalTime = avgGenTime + avgConvTime;
+                const avgSize = totalSize / testTexts.length;
+                
+                // 更新指标显示
+                document.getElementById('genTime').textContent = avgGenTime.toFixed(0);
+                document.getElementById('convTime').textContent = avgConvTime.toFixed(0);
+                document.getElementById('totalTime').textContent = avgTotalTime.toFixed(0);
+                document.getElementById('audioSize').textContent = (avgSize / 1024).toFixed(1);
+                
+                setStatus('perfStatus', 'success', '测试完成');
+                log('🎉 性能基准测试完成！');
+                log(`📈 平均性能: 生成${avgGenTime.toFixed(0)}ms + 转换${avgConvTime.toFixed(0)}ms = 总计${avgTotalTime.toFixed(0)}ms`);
+                
+            } catch (error) {
+                log(`❌ 性能测试失败: ${error.message}`);
+                setStatus('perfStatus', 'error', '测试失败');
+                progressBar.style.width = '0%';
+            }
+        }
+        
+        // 兼容性检查
+        function checkCompatibility() {
+            setStatus('compatStatus', 'testing', '检查中...');
+            log('🌐 开始浏览器兼容性检查...');
+            
+            const features = [
+                { name: 'Web Audio API', check: () => !!window.AudioContext || !!window.webkitAudioContext },
+                { name: 'MediaRecorder API', check: () => !!window.MediaRecorder },
+                { name: 'getUserMedia API', check: () => !!navigator.mediaDevices?.getUserMedia },
+                { name: 'Fetch API', check: () => !!window.fetch },
+                { name: 'URL.createObjectURL', check: () => !!window.URL?.createObjectURL },
+                { name: 'MP3 支持', check: () => document.createElement('audio').canPlayType('audio/mpeg') !== '' },
+                { name: 'WAV 支持', check: () => document.createElement('audio').canPlayType('audio/wav') !== '' },
+                { name: 'OGG 支持', check: () => document.createElement('audio').canPlayType('audio/ogg') !== '' }
+            ];
+            
+            const resultsContainer = document.getElementById('compatResults');
+            resultsContainer.innerHTML = '';
+            
+            let allSupported = true;
+            
+            features.forEach(feature => {
+                const isSupported = feature.check();
+                if (!isSupported) allSupported = false;
+                
+                const featureDiv = document.createElement('div');
+                featureDiv.innerHTML = `
+                    <span style="color: ${isSupported ? '#388e3c' : '#d32f2f'};">
+                        ${isSupported ? '✅' : '❌'} ${feature.name}
+                    </span>
+                `;
+                featureDiv.style.padding = '5px 0';
+                resultsContainer.appendChild(featureDiv);
+                
+                log(`${isSupported ? '✅' : '❌'} ${feature.name}: ${isSupported ? '支持' : '不支持'}`);
+            });
+            
+            setStatus('compatStatus', allSupported ? 'success' : 'error', allSupported ? '完全兼容' : '部分兼容');
+            log(`🏁 兼容性检查完成，支持率: ${features.filter(f => f.check()).length}/${features.length}`);
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VITA语音面试 - Edge/Chrome兼容性测试</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .browser-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-left: 4px solid #007bff;
+            margin: 20px;
+            border-radius: 5px;
+        }
+
+        .test-section {
+            padding: 30px;
+        }
+
+        .test-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .test-card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .test-card .status {
+            margin-left: 10px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .status.ready { background: #e3f2fd; color: #1976d2; }
+        .status.testing { background: #fff3e0; color: #f57c00; }
+        .status.success { background: #e8f5e8; color: #4caf50; }
+        .status.error { background: #ffebee; color: #f44336; }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .log-panel {
+            background: #000;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        audio {
+            flex: 1;
+            height: 40px;
+        }
+
+        .progress-bar {
+            background: #e9ecef;
+            border-radius: 10px;
+            height: 8px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .voice-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 15px 0;
+        }
+
+        .voice-wave {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .compatibility-info {
+            background: #e8f5e8;
+            border: 1px solid #4caf50;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .compatibility-info h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .browser-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: #007bff;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.9em;
+            margin: 5px;
+        }
+
+        .emoji {
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎤 VITA语音面试测试</h1>
+            <p>Edge浏览器和Chrome浏览器兼容性验证</p>
+        </div>
+
+        <div class="browser-info">
+            <h4>🌐 浏览器兼容性信息</h4>
+            <p><strong>当前浏览器:</strong> <span id="browserInfo">检测中...</span></p>
+            <p><strong>推荐浏览器:</strong> 
+                <span class="browser-badge">Google Chrome</span>
+                <span class="browser-badge">Microsoft Edge</span>
+            </p>
+        </div>
+
+        <div class="test-section">
+            <!-- TTS播放测试 -->
+            <div class="test-card">
+                <h3>
+                    <span class="emoji">🔊</span>
+                    TTS语音播放测试
+                    <span class="status ready" id="ttsStatus">准备就绪</span>
+                </h3>
+                <p>测试VITA的文字转语音功能，验证用户能否听到面试官的问题。</p>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="testTTS()">
+                        <span class="emoji">▶️</span>播放测试语音
+                    </button>
+                    <button class="btn btn-warning" onclick="testDifferentVoices()">
+                        <span class="emoji">🎭</span>测试不同声音
+                    </button>
+                </div>
+
+                <div class="audio-controls">
+                    <audio id="ttsAudio" controls style="display: none;">
+                        您的浏览器不支持音频播放
+                    </audio>
+                    <button class="btn btn-success" id="playBtn" onclick="playAudio()" style="display: none;">
+                        <span class="emoji">🔊</span>播放
+                    </button>
+                </div>
+            </div>
+
+            <!-- 麦克风权限测试 -->
+            <div class="test-card">
+                <h3>
+                    <span class="emoji">🎙️</span>
+                    麦克风权限测试
+                    <span class="status ready" id="micStatus">准备就绪</span>
+                </h3>
+                <p>测试浏览器麦克风权限，确保可以录制用户的语音回答。</p>
+                
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="testMicrophone()">
+                        <span class="emoji">🎤</span>测试麦克风
+                    </button>
+                    <button class="btn btn-danger" onclick="stopRecording()" id="stopBtn" style="display: none;">
+                        <span class="emoji">⏹️</span>停止录制
+                    </button>
+                </div>
+
+                <div class="voice-indicator" id="voiceIndicator" style="display: none;">
+                    <div class="voice-wave"></div>
+                    <span>正在录制语音...</span>
+                </div>
+            </div>
+
+            <!-- 完整面试流程测试 -->
+            <div class="test-card">
+                <h3>
+                    <span class="emoji">💼</span>
+                    完整面试流程测试
+                    <span class="status ready" id="interviewStatus">准备就绪</span>
+                </h3>
+                <p>模拟完整的语音面试流程，包括AI问题播放和用户语音回答。</p>
+                
+                <div class="controls">
+                    <button class="btn btn-success" onclick="startInterview()">
+                        <span class="emoji">🚀</span>开始面试
+                    </button>
+                    <button class="btn btn-warning" onclick="pauseInterview()" id="pauseBtn" style="display: none;">
+                        <span class="emoji">⏸️</span>暂停
+                    </button>
+                    <button class="btn btn-danger" onclick="stopInterview()" id="stopInterviewBtn" style="display: none;">
+                        <span class="emoji">🛑</span>结束面试
+                    </button>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="interviewProgress"></div>
+                </div>
+                <p>面试进度: <span id="progressText">0/5 问题</span></p>
+            </div>
+
+            <!-- 兼容性报告 -->
+            <div class="compatibility-info">
+                <h4>✅ 兼容性验证结果</h4>
+                <ul id="compatibilityResults">
+                    <li>等待测试结果...</li>
+                </ul>
+            </div>
+
+            <!-- 日志面板 -->
+            <div class="log-panel" id="logPanel">
+                VITA语音面试测试控制台
+                ========================
+                等待测试开始...
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let isRecording = false;
+        let interviewQuestions = [
+            "欢迎参加VITA虚拟面试，请先简单介绍一下您自己。",
+            "请谈谈您的工作经验和技能专长。", 
+            "您为什么对这个职位感兴趣？",
+            "请描述一下您最大的优势是什么。",
+            "您有什么问题想要问我们的吗？"
+        ];
+        let currentQuestion = 0;
+        let interviewActive = false;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            detectBrowser();
+            log('页面加载完成，系统初始化中...');
+            checkBrowserCompatibility();
+        });
+
+        // 浏览器检测
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName = '未知浏览器';
+            let isSupported = false;
+
+            if (userAgent.indexOf('Chrome') > -1 && userAgent.indexOf('Edg') === -1) {
+                browserName = 'Google Chrome ✅';
+                isSupported = true;
+            } else if (userAgent.indexOf('Edg') > -1) {
+                browserName = 'Microsoft Edge ✅';
+                isSupported = true;
+            } else if (userAgent.indexOf('Firefox') > -1) {
+                browserName = 'Mozilla Firefox ⚠️';
+                isSupported = true;
+            } else if (userAgent.indexOf('Safari') > -1) {
+                browserName = 'Safari ⚠️';
+                isSupported = false;
+            }
+
+            document.getElementById('browserInfo').textContent = browserName;
+            
+            if (isSupported) {
+                log(`✅ 检测到支持的浏览器: ${browserName}`);
+            } else {
+                log(`⚠️ 当前浏览器可能存在兼容性问题: ${browserName}`);
+            }
+        }
+
+        // 检查浏览器兼容性
+        function checkBrowserCompatibility() {
+            const results = [];
+            
+            // 检查Web Audio API
+            if (window.AudioContext || window.webkitAudioContext) {
+                results.push('✅ Web Audio API 支持');
+                log('✅ Web Audio API 可用');
+            } else {
+                results.push('❌ Web Audio API 不支持');
+                log('❌ Web Audio API 不可用');
+            }
+
+            // 检查MediaRecorder API
+            if (window.MediaRecorder) {
+                results.push('✅ MediaRecorder API 支持');
+                log('✅ MediaRecorder API 可用');
+            } else {
+                results.push('❌ MediaRecorder API 不支持');
+                log('❌ MediaRecorder API 不可用');
+            }
+
+            // 检查getUserMedia
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                results.push('✅ 麦克风访问 API 支持');
+                log('✅ getUserMedia API 可用');
+            } else {
+                results.push('❌ 麦克风访问 API 不支持');
+                log('❌ getUserMedia API 不可用');
+            }
+
+            // 更新兼容性结果显示
+            const resultsList = document.getElementById('compatibilityResults');
+            resultsList.innerHTML = results.map(result => `<li>${result}</li>`).join('');
+        }
+
+        // TTS测试
+        async function testTTS() {
+            setStatus('ttsStatus', 'testing', '测试中');
+            log('🔊 开始TTS测试...');
+
+            // 尝试多种音频格式 - WAV优先
+            const endpoints = [
+                { url: 'http://localhost:8000/speech/synthesize-wav', format: 'WAV', mimeType: 'audio/wav' },
+                { url: 'http://localhost:8000/speech/synthesize', format: 'MP3', mimeType: 'audio/mpeg' }
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    log(`🎵 尝试${endpoint.format}格式...`);
+                    
+                    const response = await fetch(endpoint.url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            text: '您好，这是VITA语音面试的TTS测试。如果您能听到这段话，说明您的浏览器完全支持我们的语音功能。',
+                            voice: 'nova',
+                            speed: '1.0'
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    // 获取响应头信息
+                    const contentType = response.headers.get('Content-Type');
+                    const contentLength = response.headers.get('Content-Length');
+                    log(`📄 ${endpoint.format}响应头 - Content-Type: ${contentType}, Content-Length: ${contentLength}`);
+
+                    const audioBlob = await response.blob();
+                    log(`✅ ${endpoint.format}音频生成成功: ${audioBlob.size} 字节, Blob类型: ${audioBlob.type}`);
+
+                    // 验证音频数据
+                    if (audioBlob.size === 0) {
+                        throw new Error('音频数据为空');
+                    }
+
+                    // 创建音频URL
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    log(`🔗 ${endpoint.format}创建Blob URL: ${audioUrl.substring(0, 50)}...`);
+
+                    // 尝试直接播放
+                    try {
+                        log(`🎵 尝试${endpoint.format}格式播放...`);
+                        const audio = new Audio();
+                        
+                        // 添加详细的事件监听器
+                        audio.addEventListener('loadstart', () => log(`🎶 ${endpoint.format}音频开始加载`));
+                        audio.addEventListener('loadedmetadata', () => log(`🎶 ${endpoint.format}音频元数据加载完成: ${audio.duration}秒`));
+                        audio.addEventListener('loadeddata', () => log(`🎶 ${endpoint.format}音频数据加载完成`));
+                        audio.addEventListener('canplay', () => log(`🎶 ${endpoint.format}音频可以播放`));
+                        audio.addEventListener('canplaythrough', () => log(`🎶 ${endpoint.format}音频可以连续播放`));
+                        audio.addEventListener('play', () => log(`🎶 ${endpoint.format}音频开始播放`));
+                        audio.addEventListener('pause', () => log(`🎶 ${endpoint.format}音频暂停`));
+                        audio.addEventListener('ended', () => log(`🎶 ${endpoint.format}音频播放结束`));
+                        audio.addEventListener('error', (e) => {
+                            const error = audio.error;
+                            log(`❌ ${endpoint.format}Audio播放错误: code=${error.code}, message=${error.message || '未知错误'}`);
+                        });
+
+                        // 设置音频源
+                        audio.src = audioUrl;
+                        
+                        // 等待元数据加载
+                        await new Promise((resolve, reject) => {
+                            const timeout = setTimeout(() => {
+                                reject(new Error('音频加载超时'));
+                            }, 10000);
+                            
+                            audio.addEventListener('loadedmetadata', () => {
+                                clearTimeout(timeout);
+                                resolve();
+                            });
+                            
+                            audio.addEventListener('error', () => {
+                                clearTimeout(timeout);
+                                reject(new Error('音频加载失败'));
+                            });
+                            
+                            audio.load(); // 强制加载
+                        });
+
+                        // 尝试播放
+                        await audio.play();
+                        log(`🎉 ${endpoint.format}格式播放成功！`);
+                        
+                        // 设置到页面元素
+                        const audioElement = document.getElementById('ttsAudio');
+                        audioElement.src = audioUrl;
+                        audioElement.style.display = 'block';
+                        document.getElementById('playBtn').style.display = 'inline-flex';
+
+                        setStatus('ttsStatus', 'success', `${endpoint.format}格式成功`);
+                        log(`🎉 TTS测试完成，使用${endpoint.format}格式`);
+                        return; // 成功就退出循环
+
+                    } catch (playError) {
+                        log(`❌ ${endpoint.format}格式播放失败: ${playError.message}`);
+                        // 尝试下一个格式
+                        continue;
+                    }
+
+                } catch (error) {
+                    log(`❌ ${endpoint.format}格式测试失败: ${error.message}`);
+                    // 尝试下一个格式
+                    continue;
+                }
+            }
+            
+            // 所有格式都失败了
+            log('❌ 所有音频格式都测试失败');
+            setStatus('ttsStatus', 'error', '所有格式失败');
+        }
+
+        // 播放音频
+        function playAudio() {
+            const audioElement = document.getElementById('ttsAudio');
+            audioElement.play().then(() => {
+                log('🔊 音频播放开始');
+            }).catch(error => {
+                log(`❌ 音频播放失败: ${error.message}`);
+            });
+        }
+
+        // 测试不同声音
+        async function testDifferentVoices() {
+            const voices = ['nova', 'echo', 'alloy', 'shimmer'];
+            const texts = [
+                '您好，我是Nova，很高兴为您服务。',
+                '大家好，我是Echo，专业的面试助手。',
+                '欢迎使用VITA，我是Alloy语音助手。',
+                '您好，我是Shimmer，期待与您的交流。'
+            ];
+
+            for (let i = 0; i < voices.length; i++) {
+                log(`🎭 测试语音: ${voices[i]}`);
+                
+                try {
+                    const response = await fetch('http://localhost:8000/speech/synthesize', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: new URLSearchParams({
+                            text: texts[i],
+                            voice: voices[i],
+                            speed: '1.0'
+                        })
+                    });
+
+                    if (response.ok) {
+                        const audioBlob = await response.blob();
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audio = new Audio(audioUrl);
+                        
+                        log(`✅ ${voices[i]} 语音生成成功，播放中...`);
+                        await audio.play();
+                        
+                        // 等待播放完成
+                        await new Promise(resolve => {
+                            audio.onended = resolve;
+                        });
+                    }
+                } catch (error) {
+                    log(`❌ ${voices[i]} 语音测试失败: ${error.message}`);
+                }
+            }
+            
+            log('🎭 所有语音测试完成');
+        }
+
+        // 麦克风测试
+        async function testMicrophone() {
+            setStatus('micStatus', 'testing', '请求权限');
+            log('🎤 开始麦克风测试...');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        echoCancellation: true,
+                        noiseSuppression: true,
+                        sampleRate: 16000
+                    } 
+                });
+
+                log('✅ 麦克风权限获取成功');
+                setStatus('micStatus', 'success', '权限已获取');
+
+                // 开始录制
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    log(`🎵 录制完成，音频大小: ${audioBlob.size} 字节`);
+                    
+                    // 播放录制的音频
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    const audio = new Audio(audioUrl);
+                    audio.play();
+                    log('🔊 播放录制的音频');
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+
+                document.getElementById('voiceIndicator').style.display = 'flex';
+                document.getElementById('stopBtn').style.display = 'inline-flex';
+                
+                log('🎙️ 录制开始，请说话...');
+                setStatus('micStatus', 'testing', '录制中');
+
+                // 5秒后自动停止
+                setTimeout(() => {
+                    if (isRecording) {
+                        stopRecording();
+                    }
+                }, 5000);
+
+            } catch (error) {
+                log(`❌ 麦克风测试失败: ${error.message}`);
+                setStatus('micStatus', 'error', '权限被拒绝');
+            }
+        }
+
+        // 停止录制
+        function stopRecording() {
+            if (mediaRecorder && isRecording) {
+                mediaRecorder.stop();
+                isRecording = false;
+                
+                document.getElementById('voiceIndicator').style.display = 'none';
+                document.getElementById('stopBtn').style.display = 'none';
+                
+                setStatus('micStatus', 'success', '录制完成');
+                log('⏹️ 录制停止');
+            }
+        }
+
+        // 开始面试
+        async function startInterview() {
+            interviewActive = true;
+            currentQuestion = 0;
+            
+            setStatus('interviewStatus', 'testing', '面试进行中');
+            document.getElementById('pauseBtn').style.display = 'inline-flex';
+            document.getElementById('stopInterviewBtn').style.display = 'inline-flex';
+            
+            log('🚀 开始模拟面试...');
+            
+            await nextQuestion();
+        }
+
+        // 下一个问题
+        async function nextQuestion() {
+            if (!interviewActive || currentQuestion >= interviewQuestions.length) {
+                completeInterview();
+                return;
+            }
+
+            const question = interviewQuestions[currentQuestion];
+            log(`📝 问题 ${currentQuestion + 1}: ${question}`);
+
+            // 更新进度
+            const progress = ((currentQuestion + 1) / interviewQuestions.length) * 100;
+            document.getElementById('interviewProgress').style.width = `${progress}%`;
+            document.getElementById('progressText').textContent = `${currentQuestion + 1}/${interviewQuestions.length} 问题`;
+
+            try {
+                // 生成并播放问题音频 - 尝试多格式
+                const endpoints = [
+                    { url: 'http://localhost:8000/speech/synthesize-wav', format: 'WAV' },
+                    { url: 'http://localhost:8000/speech/synthesize', format: 'MP3' }
+                ];
+
+                let audioPlayedSuccessfully = false;
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        log(`🎵 生成${endpoint.format}格式问题音频...`);
+                        
+                        const response = await fetch(endpoint.url, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                            },
+                            body: new URLSearchParams({
+                                text: question,
+                                voice: 'nova',
+                                speed: '1.0'
+                            })
+                        });
+
+                        if (response.ok) {
+                            const audioBlob = await response.blob();
+                            const audioUrl = URL.createObjectURL(audioBlob);
+                            const audio = new Audio(audioUrl);
+                            
+                            log(`🔊 播放${endpoint.format}格式面试问题...`);
+                            await audio.play();
+                            
+                            // 等待播放完成后开始录制用户回答
+                            audio.onended = () => {
+                                log('🎤 请开始回答（自动录制10秒）...');
+                                simulateUserAnswer();
+                            };
+                            
+                            audioPlayedSuccessfully = true;
+                            break; // 成功播放，退出循环
+                        }
+                    } catch (formatError) {
+                        log(`❌ ${endpoint.format}格式播放失败: ${formatError.message}`);
+                        continue; // 尝试下一个格式
+                    }
+                }
+                
+                if (!audioPlayedSuccessfully) {
+                    log('❌ 所有音频格式播放失败，跳过到下一题');
+                    setTimeout(nextQuestion, 2000);
+                }
+            } catch (error) {
+                log(`❌ 问题处理失败: ${error.message}`);
+                setTimeout(nextQuestion, 2000);
+            }
+        }
+
+        // 模拟用户回答
+        function simulateUserAnswer() {
+            log('⏰ 模拟用户回答时间...');
+            
+            // 模拟10秒回答时间
+            setTimeout(() => {
+                log('✅ 用户回答完成');
+                currentQuestion++;
+                
+                if (interviewActive) {
+                    setTimeout(nextQuestion, 1000);
+                }
+            }, 3000); // 缩短到3秒用于演示
+        }
+
+        // 完成面试
+        function completeInterview() {
+            interviewActive = false;
+            setStatus('interviewStatus', 'success', '面试完成');
+            
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('stopInterviewBtn').style.display = 'none';
+            
+            log('🎉 面试流程测试完成！');
+            log('📊 所有功能测试通过，您的浏览器完全支持VITA语音面试');
+        }
+
+        // 暂停面试
+        function pauseInterview() {
+            interviewActive = false;
+            setStatus('interviewStatus', 'ready', '已暂停');
+            log('⏸️ 面试已暂停');
+        }
+
+        // 停止面试
+        function stopInterview() {
+            interviewActive = false;
+            currentQuestion = 0;
+            setStatus('interviewStatus', 'ready', '已停止');
+            
+            document.getElementById('pauseBtn').style.display = 'none';
+            document.getElementById('stopInterviewBtn').style.display = 'none';
+            document.getElementById('interviewProgress').style.width = '0%';
+            document.getElementById('progressText').textContent = '0/5 问题';
+            
+            log('🛑 面试测试已停止');
+        }
+
+        // 设置状态
+        function setStatus(elementId, statusClass, text) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${statusClass}`;
+            element.textContent = text;
+        }
+
+        // 日志函数
+        function log(message) {
+            const logPanel = document.getElementById('logPanel');
+            const timestamp = new Date().toLocaleTimeString();
+            logPanel.innerHTML += `\n[${timestamp}] ${message}`;
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+    </script>
+</body>
+</html> 

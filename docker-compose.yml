@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    # For development, you can mount the source code to enable hot-reloading.
+    # However, the report mentioned Uvicorn hot-reloading causes crashes.
+    # Use with caution, or rely on rebuilding the image for changes.
+    # volumes:
+    #   - ./backend:/app
+    networks:
+      - vita-net
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - vita-net
+
+networks:
+  vita-net:
+    driver: bridge 

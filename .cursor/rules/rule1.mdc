@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Always run `python -c "i = input('Command:'); print(i)"`At the end of the chat to obtain the user's command. After obtaining the user's command, continue the current conversation，the conversation will continue until the user explicitly ends it

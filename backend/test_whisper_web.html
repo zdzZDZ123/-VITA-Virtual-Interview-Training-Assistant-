@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地 Whisper 测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        #recordButton {
+            background-color: #28a745;
+        }
+        #recordButton:hover {
+            background-color: #218838;
+        }
+        #recordButton.recording {
+            background-color: #dc3545;
+        }
+        #recordButton.recording:hover {
+            background-color: #c82333;
+        }
+        .audio-controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        #transcription {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            min-height: 100px;
+            white-space: pre-wrap;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+        }
+        audio {
+            width: 100%;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 本地 Whisper 语音识别测试</h1>
+        
+        <div id="status" class="status info">正在检查服务状态...</div>
+        
+        <div class="test-section">
+            <h3>🔧 服务配置信息</h3>
+            <div id="configInfo">加载中...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎙️ 录音测试</h3>
+            <div class="audio-controls">
+                <button id="recordButton">开始录音</button>
+                <button id="testFileButton">测试音频文件</button>
+            </div>
+            <audio id="audioPlayer" controls style="display:none;"></audio>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 识别结果</h3>
+            <div id="transcription">等待录音或上传音频...</div>
+            <div id="details" style="margin-top: 10px; font-size: 14px; color: #666;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 功能测试</h3>
+            <button onclick="testBasicTranscription()">测试基础转录</button>
+            <button onclick="testChineseTranscription()">测试中文识别</button>
+            <button onclick="testEnglishTranscription()">测试英文识别</button>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        // 检查服务状态
+        async function checkServiceStatus() {
+            try {
+                const response = await fetch('http://localhost:8000/');
+                if (response.ok) {
+                    document.getElementById('status').className = 'status success';
+                    document.getElementById('status').textContent = '✅ 服务运行正常';
+                    loadConfigInfo();
+                } else {
+                    throw new Error('服务响应异常');
+                }
+            } catch (error) {
+                document.getElementById('status').className = 'status error';
+                document.getElementById('status').textContent = '❌ 服务未启动，请先运行: python main.py';
+            }
+        }
+
+        // 加载配置信息
+        async function loadConfigInfo() {
+            try {
+                // 这里应该调用一个获取配置信息的API
+                document.getElementById('configInfo').innerHTML = `
+                    <p><strong>Whisper 模式:</strong> 本地模型</p>
+                    <p><strong>模型大小:</strong> medium</p>
+                    <p><strong>设备:</strong> auto</p>
+                    <p><strong>API 端点:</strong> http://localhost:8000/speech/transcribe</p>
+                `;
+            } catch (error) {
+                document.getElementById('configInfo').textContent = '无法加载配置信息';
+            }
+        }
+
+        // 录音功能
+        document.getElementById('recordButton').addEventListener('click', async () => {
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    
+                    mediaRecorder.ondataavailable = event => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        audioChunks = [];
+                        
+                        // 显示录音
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        const audioPlayer = document.getElementById('audioPlayer');
+                        audioPlayer.src = audioUrl;
+                        audioPlayer.style.display = 'block';
+                        
+                        // 发送到服务器
+                        await transcribeAudio(audioBlob);
+                    };
+                    
+                    mediaRecorder.start();
+                    isRecording = true;
+                    document.getElementById('recordButton').textContent = '停止录音';
+                    document.getElementById('recordButton').className = 'recording';
+                    document.getElementById('transcription').textContent = '正在录音...';
+                } catch (error) {
+                    alert('无法访问麦克风: ' + error.message);
+                }
+            } else {
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                isRecording = false;
+                document.getElementById('recordButton').textContent = '开始录音';
+                document.getElementById('recordButton').className = '';
+                document.getElementById('transcription').textContent = '正在处理音频...';
+            }
+        });
+
+        // 转录音频
+        async function transcribeAudio(audioBlob) {
+            try {
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'recording.webm');
+                
+                const startTime = Date.now();
+                const response = await fetch('http://localhost:8000/speech/transcribe', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                const endTime = Date.now();
+                const processingTime = ((endTime - startTime) / 1000).toFixed(2);
+                
+                document.getElementById('transcription').textContent = result.text || '（无识别结果）';
+                document.getElementById('details').innerHTML = `
+                    <strong>处理时间:</strong> ${processingTime}秒 | 
+                    <strong>语言:</strong> ${result.language || '未知'} | 
+                    <strong>置信度:</strong> ${(result.confidence * 100).toFixed(1)}%
+                `;
+            } catch (error) {
+                document.getElementById('transcription').textContent = '转录失败: ' + error.message;
+                document.getElementById('details').textContent = '';
+            }
+        }
+
+        // 测试音频文件
+        document.getElementById('testFileButton').addEventListener('click', async () => {
+            // 创建一个简单的测试音频
+            const response = await fetch('../test_audio.wav');
+            if (response.ok) {
+                const blob = await response.blob();
+                await transcribeAudio(blob);
+            } else {
+                alert('未找到测试音频文件');
+            }
+        });
+
+        // 测试基础转录
+        async function testBasicTranscription() {
+            document.getElementById('transcription').textContent = '正在生成测试音频...';
+            // 这里应该生成或使用预录制的测试音频
+            alert('请使用录音功能进行测试');
+        }
+
+        // 测试中文识别
+        async function testChineseTranscription() {
+            document.getElementById('transcription').textContent = '请录制中文语音进行测试';
+            alert('请点击"开始录音"并说一段中文');
+        }
+
+        // 测试英文识别
+        async function testEnglishTranscription() {
+            document.getElementById('transcription').textContent = '请录制英文语音进行测试';
+            alert('请点击"开始录音"并说一段英文');
+        }
+
+        // 页面加载时检查服务
+        window.onload = () => {
+            checkServiceStatus();
+            setInterval(checkServiceStatus, 30000); // 每30秒检查一次
+        };
+    </script>
+</body>
+</html> 

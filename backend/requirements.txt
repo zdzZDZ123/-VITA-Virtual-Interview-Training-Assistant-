@@ -1,0 +1,55 @@
+# Core framework
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+python-multipart==0.0.20
+
+# Data validation and serialization
+pydantic==2.6.4
+pydantic-settings==2.2.1
+email-validator==2.2.0
+
+# API clients
+httpx==0.28.1
+# openai==1.23.6  # 已移除OpenAI依赖，使用纯本地HTTP客户端
+aiohttp==3.8.6
+requests==2.32.3
+
+# ML and Audio processing
+numpy==1.24.4
+scipy==1.10.1
+torch==2.2.2
+openai-whisper==20231117
+# faster-whisper==1.0.3  # 暂时注释，使用pip install --no-deps安装
+soundfile==0.12.1
+
+# TTS dependencies - 修复Edge-TTS版本
+edge-tts==7.0.2  # 更新到最新版本修复TrustedClientToken问题
+pyttsx3==2.91
+diskcache==5.6.3
+
+# Async and concurrency
+anyio==4.5.2
+aiofiles==24.1.0
+
+# Utilities
+python-dotenv==1.0.1
+pyyaml==6.0.2
+orjson==3.10.15
+tqdm==4.67.1
+
+# Development and testing
+pytest==8.3.5
+pytest-asyncio==0.23.5
+pytest-cov==4.1.0
+
+# Logging
+loguru==0.7.2
+
+# Monitoring
+prometheus-client==0.19.0
+psutil==5.9.8
+
+# 缓存系统
+aiocache[redis]==0.12.0
+redis==5.0.1
+hiredis==2.3.2  # C扩展，提升Redis性能

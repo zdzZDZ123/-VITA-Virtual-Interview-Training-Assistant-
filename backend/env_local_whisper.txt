@@ -1,0 +1,36 @@
+# OpenAI API 配置（可选，作为备用）
+OPENAI_API_KEY=your_openai_api_key_here
+
+# 启用本地 Whisper
+USE_LOCAL_WHISPER=true
+LOCAL_WHISPER_MODEL=medium
+LOCAL_WHISPER_DEVICE=auto
+LOCAL_WHISPER_COMPUTE_TYPE=float16
+
+# Redis 配置
+REDIS_URL=redis://localhost:6379
+
+# 后端服务配置
+BACKEND_HOST=0.0.0.0
+BACKEND_PORT=8000
+
+# 视觉服务配置
+VISION_HOST=0.0.0.0
+VISION_PORT=8001
+
+# 前端配置
+REACT_APP_API_URL=http://localhost:8000
+REACT_APP_VISION_API_URL=http://localhost:8001
+
+# 环境标识
+ENVIRONMENT=development
+
+# 日志级别
+LOG_LEVEL=INFO
+
+# 启用智能切换（当本地模型失败时自动切换到云端）
+ENABLE_AUTO_SWITCH=true
+
+# Qwen API 配置（作为备用）
+USE_QWEN_FALLBACK=false
+QWEN_API_KEY=your_qwen_api_key_here 
