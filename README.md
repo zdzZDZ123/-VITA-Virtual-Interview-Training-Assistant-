@@ -2,6 +2,84 @@
 
 ![VITA Logo](https://via.placeholder.com/150x50/3B82F6/FFFFFF?text=VITA)
 
+**🎯 AI-Powered Virtual Interview & Training Assistant**
+
+VITA is an advanced AI-driven platform that revolutionizes interview preparation through immersive 3D digital human interaction, real-time voice processing, and comprehensive performance analysis. Experience the most realistic interview simulation with cutting-edge AI technology.
+
+## 🌟 Key Features
+
+### 🤖 Intelligent AI Interviewer
+- **Multi-format Interviews**: Behavioral, technical, and scenario-based interviews
+- **Personalized Questions**: Customized queries based on job descriptions (JD)
+- **Natural Conversations**: Powered by advanced LLM models (Qwen, Llama, Doubao)
+
+### 👁️ Advanced Vision Analysis (Core Highlight)
+- **Eye Contact Tracking**: Real-time detection of interviewer engagement
+- **Facial Expression Recognition**: Confidence and emotion assessment
+- **Posture Analysis**: Body language and gesture evaluation
+- **Live Feedback**: Instant non-verbal behavior improvement suggestions
+
+### 🎤 Real-time Voice Processing
+- **Local Speech Recognition**: Offline Whisper model integration
+- **Natural Voice Synthesis**: Multi-language TTS with emotional tones
+- **Voice Cloning**: Advanced voice replication capabilities
+- **Noise Cancellation**: Professional audio processing
+
+### 📊 Comprehensive Analytics & Reports
+- **Content Analysis**: STAR method evaluation, keyword matching, clarity assessment
+- **Communication Metrics**: Speech pace, filler words, emotional tone analysis
+- **Visual Performance**: Eye contact duration, expression changes, posture stability
+- **Actionable Insights**: Specific practice recommendations and improvement plans
+
+## 🏗️ Technical Architecture
+
+```
+vita/
+├── backend/              # FastAPI Backend Services
+│   ├── core/            # Core Business Logic
+│   ├── models/          # Data Models
+│   └── main.py          # Main Application Entry
+├── vision_service/      # Vision Analysis Microservice
+│   ├── app.py           # MediaPipe + OpenCV
+│   └── models/          # Vision Analysis Models
+├── frontend/            # React + TypeScript Frontend
+│   ├── src/
+│   │   ├── components/  # React Components
+│   │   ├── store/       # Zustand State Management
+│   │   └── api/         # API Client
+│   └── package.json
+└── docker-compose.yml   # Container Orchestration
+```
+
+### Technology Stack
+
+**Backend**
+- **FastAPI**: High-performance Python web framework
+- **Qwen & Llama Models**: Intelligent conversation and feedback generation
+- **Redis** + **aiocache**: Distributed caching & session storage
+- **Prometheus**: Performance monitoring & metrics collection
+- **Pydantic**: Data validation and serialization
+
+**Vision Analysis**
+- **MediaPipe**: Google's machine learning pipeline framework
+- **OpenCV**: Computer vision processing
+- **NumPy**: Numerical computing
+
+**Frontend**
+- **React 18 + TypeScript**: Modern frontend framework
+- **Vite** + **Rollup**: Lightning-fast builds & smart code splitting
+- **Zustand**: Lightweight state management
+- **Tailwind CSS**: Utility-first CSS framework
+- **Three.js**: 3D graphics and digital human rendering
+- **Axios**: HTTP client
+
+**AI Models**
+- **Local Whisper**: Offline speech recognition
+- **Edge-TTS**: Local text-to-speech synthesis
+- **Multiple LLM Support**: Qwen, Llama, Doubao integration
+
+---
+
 **VITA** 是一个基于AI的虚拟面试与培训助理平台，通过集成虚拟人、计算机视觉和对话式AI技术，为求职者提供最逼真的面试模拟体验。
 
 ## 🌟 核心特性
